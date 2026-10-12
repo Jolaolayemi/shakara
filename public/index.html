@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#140C1C">
+<title>SHAKARA · Street football 5-a-side</title>
+<meta name="description" content="Online 5v5 Naija street football in your browser. Tap the link, enter the lobby, play.">
+<meta property="og:title" content="SHAKARA · Street football with your guys">
+<meta property="og:description" content="Online 5-a-side in your browser. No download. Tap the link and enter the lobby.">
+<meta property="og:image" content="/assets/share.jpg?v=__V__">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="/assets/favicon.png?v=__V__">
+<link rel="apple-touch-icon" href="/assets/icon-192.png?v=__V__">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preload" href="/assets/bungee.woff2?v=__V__" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/style.css?v=__V__">
+</head>
+<body>
+<!-- The game draws on this canvas. Everything else on this page is menus and buttons on top of it. -->
+<canvas id="cv"></canvas>
+
+<!-- HOME SCREEN -->
+<section id="home" class="screen">
+  <div class="card home">
+    <div class="brand"><img src="/assets/logo.webp?v=__V__" alt="SHAKARA" width="360" height="96"><p class="tag">Street football · 5-a-side · any phone</p></div>
+    <label class="lbl" for="nick">Your name</label>
+    <input id="nick" maxlength="14" placeholder="e.g. Tunde" autocomplete="nickname">
+    <button id="bQuick" class="btn big yellow">PLAY NOW <small>quick match near you</small></button>
+    <button id="bCreate" class="btn big green">CREATE ROOM <small>invite your guys</small></button>
+    <div class="row joinRow">
+      <input id="code" maxlength="5" placeholder="CODE" autocapitalize="characters" spellcheck="false" aria-label="Room code">
+      <button id="bJoin" class="btn">JOIN</button>
+    </div>
+    <p class="hint" id="homeMsg"></p>
+    <details class="how"><summary>How to play</summary>
+      <p><b>Phone:</b> turn sideways. Left thumb moves. <b>SHOOT</b> (hold for power), <b>PASS</b>, <b>TACKLE</b> (tap = slide, hold = sprint), <b>MARK</b> (hold to shadow your man), <b>CALL</b> (ask for the ball).</p>
+      <p><b>Laptop:</b> WASD or arrows move · <b>J</b>/Space pass · <b>K</b> shoot (hold) · <b>L</b> tackle · <b>Shift</b> sprint · <b>X</b> mark (hold) · <b>C</b> call for ball.</p>
+      <p>The ball bounces off the walls, no throw-ins. Bots fill any empty spot.</p>
+    </details>
+  </div>
+</section>
+
+<!-- LOBBY -->
+<section id="lobby" class="screen hidden">
+  <div class="card lobby">
+    <div class="lobbyTop">
+      <button id="bLeave" class="btn ghost small">← LEAVE</button>
+      <div class="codeBox"><span class="lbl">Room code</span><b id="roomCode">-----</b></div>
+      <div class="share">
+        <button id="bWa" class="btn wa small">WHATSAPP</button>
+        <button id="bCopy" class="btn small">COPY LINK</button>
+      </div>
+    </div>
+    <div class="teams">
+      <div class="team tA"><h3><i></i><span id="tAName">LAGOS LIONS</span></h3><ul id="slotsA"></ul><button class="btn small join" data-team="0">JOIN LIONS</button></div>
+      <div class="vs">VS</div>
+      <div class="team tB"><h3><i></i><span id="tBName">ABA WARRIORS</span></h3><ul id="slotsB"></ul><button class="btn small join" data-team="1">JOIN WARRIORS</button></div>
+    </div>
+    <div class="lobbyBottom">
+      <div class="nameRow"><label class="lbl" for="nick2">Name</label><input id="nick2" maxlength="14"></div>
+      <div id="hostCtl">
+        <label class="lbl" for="halfLen">Half</label>
+        <select id="halfLen"><option value="60">1 min</option><option value="120">2 min</option><option value="180" selected>3 min</option><option value="300">5 min</option></select>
+        <label class="chk"><input type="checkbox" id="pub" checked> Public</label>
+        <button id="bStart" class="btn yellow">START ▶</button>
+      </div>
+      <p id="waitMsg" class="hint">Waiting for the host to start…</p>
+    </div>
+  </div>
+</section>
+
+<!-- IN-MATCH HUD -->
+<div id="hud" class="hidden">
+  <div class="scoreboard">
+    <div class="sbRow"><span class="tn a" id="hA">LIONS</span><b class="sc a" id="sA">0</b><b class="sc b" id="sB">0</b><span class="tn b" id="hB">WARRIORS</span></div>
+    <div class="sbClock"><span id="half" class="half">1ST HALF</span><span class="clock" id="clock">3:00</span></div>
+  </div>
+  <div id="net" class="net"></div>
+  <canvas id="mini" width="112" height="68"></canvas>
+  <div id="ticker" class="ticker hidden"></div>
+  <div id="banner" class="banner hidden"><div class="big" id="bnBig"></div><div class="small" id="bnSmall"></div><div class="scard hidden" id="bnCard"><b id="bcName"></b><span id="bcSub"></span><i id="bcScore"></i></div></div>
+  <div id="touch" class="hidden">
+    <div id="stickZone"><div id="stickBase"><div id="stickKnob"></div></div></div>
+    <div id="btns">
+      <span id="ctxLabel" class="ctx">LOOSE BALL</span>
+      <button id="tShoot" class="tb shoot">SHOOT</button>
+      <button id="tPass" class="tb pass">PASS</button>
+      <button id="tTackle" class="tb tackle">TACKLE<small>hold = sprint</small></button>
+      <button id="tMark" class="tb mark">MARK<small>hold</small></button>
+      <button id="tCall" class="tb call">CALL<small>for ball</small></button>
+    </div>
+    <div id="stamina"><i></i></div>
+  </div>
+  <button id="bMenu" class="btn ghost small menuBtn" aria-label="Menu">☰</button>
+</div>
+
+<!-- FULL TIME -->
+<section id="ft" class="screen hidden">
+  <div class="card ft">
+    <p class="lbl">Full time</p>
+    <div class="ftScore"><span class="a">LIONS</span><b id="ftA">0</b><i>–</i><b id="ftB">0</b><span class="b">WARRIORS</span></div>
+    <p id="ftLine" class="pidgin"></p>
+    <button id="bRematch" class="btn big yellow">REMATCH</button>
+    <p id="rmMsg" class="hint"></p>
+    <div class="row"><button id="bToLobby" class="btn small">BACK TO LOBBY</button><button id="bFtShare" class="btn small wa">INVITE MORE</button></div>
+  </div>
+</section>
+
+<div id="rotate" class="hidden"><div><div class="rot">⟳</div><p>Turn your phone sideways to play</p></div></div>
+<div id="toast" class="hidden"></div>
+<script type="module" src="/main.js?v=__V__"></script>
+</body>
+</html>

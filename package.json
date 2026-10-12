@@ -1,0 +1,10 @@
+{
+  "name": "naija5-proto",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Naija 5-a-side street football: online multiplayer browser prototype",
+  "scripts": { "start": "node server/server.js", "test": "node --test test/" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "ws": "^8.18.0" }
+}
